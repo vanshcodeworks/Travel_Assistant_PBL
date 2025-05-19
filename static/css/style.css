@@ -1,0 +1,148 @@
+/* Global Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.header {
+    background-color: #28a745;
+    color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid #e0e0e0;
+    color: #666;
+}
+
+/* Feature cards on homepage */
+.feature-card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    height: 100%;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    transition: transform 0.3s;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Results page */
+.route-map {
+    height: 400px;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 0.25rem;
+}
+
+.route-map-fullscreen {
+    height: 600px;
+    width: 100%;
+}
+
+.weather-container {
+    display: flex;
+    justify-content: space-between;
+    margin: 0 -10px;
+}
+
+.weather-day {
+    text-align: center;
+    padding: 10px;
+    flex: 1;
+}
+
+.weather-icon {
+    font-size: 2rem;
+    margin: 10px 0;
+}
+
+.weather-date {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.weather-temp {
+    font-weight: bold;
+}
+
+.weather-desc {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.attraction-thumbnail {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+/* Weather page */
+.weather-card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    height: 100%;
+    transition: transform 0.2s;
+}
+
+.weather-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.weather-icon-large {
+    font-size: 4rem;
+    margin: 15px 0;
+}
+
+.weather-tip {
+    background-color: #e8f4fc;
+}
+
+/* Attractions page */
+.attraction-card {
+    transition: transform 0.3s;
+}
+
+.attraction-card:hover {
+    transform: translateY(-5px);
+}
+
+.attraction-img {
+    height: 200px;
+    object-fit: cover;
+}
+
+/* Route info cards */
+.route-info-card {
+    background-color: #f9f9f9;
+    border-left: 4px solid #28a745;
+    padding: 15px;
+    border-radius: 4px;
+    height: 100%;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .weather-container {
+        flex-direction: column;
+    }
+    
+    .weather-day {
+        margin-bottom: 15px;
+    }
+    
+    .route-map {
+        height: 300px;
+    }
+    
+    .route-map-fullscreen {
+        height: 400px;
+    }
+}

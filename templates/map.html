@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Route Map | Smart Travel Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="header">
+        <div class="container py-3">
+            <h1>Route Map</h1>
+            <p class="lead">{{ source }} to {{ destination }}</p>
+        </div>
+    </div>
+
+    <div class="container my-4">
+        <div class="card shadow">
+            <div class="card-body p-0">
+                <div class="route-map-fullscreen">
+                    {{ map_html|safe }}
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow mt-4">
+            <div class="card-header bg-light">
+                <h5>Route Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="route-info-card">
+                            <h6>✈️ Flight Route</h6>
+                            <p><strong>Distance:</strong> Shortest direct path</p>
+                            <p><strong>Travel Time:</strong> Fastest option</p>
+                            <p class="text-muted">Shown as blue dashed line on map</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="route-info-card">
+                            <h6>🚆 Train Route</h6>
+                            <p><strong>Distance:</strong> May include connections</p>
+                            <p><strong>Travel Time:</strong> Medium duration</p>
+                            <p class="text-muted">Shown as red solid line on map</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="route-info-card">
+                            <h6>🚌 Bus Route</h6>
+                            <p><strong>Distance:</strong> May follow highways</p>
+                            <p><strong>Travel Time:</strong> Longest duration</p>
+                            <p class="text-muted">Shown as green solid line on map</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="javascript:history.back()" class="btn btn-primary">Back to Results</a>
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary ms-2">New Search</a>
+        </div>
+    </div>
+
+    <footer class="footer mt-4">
+        <div class="container text-center py-3">
+            <p>Smart Travel Assistant &copy; 2023</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

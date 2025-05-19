@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Results | Smart Travel Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="header">
+        <div class="container py-3">
+            <h1>🚀 Smart Travel Assistant</h1>
+            <p class="lead">Travel options from <strong>{{ source }}</strong> to <strong>{{ destination }}</strong></p>
+            <p>Distance: <strong>{{ distance }} km</strong></p>
+        </div>
+    </div>
+
+    <div class="container my-4">
+        <!-- Price trends chart -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-light">
+                <h3>Price Trends</h3>
+            </div>
+            <div class="card-body">
+                <canvas id="priceTrendChart" height="100"></canvas>
+                <div class="text-center mt-3">
+                    <p class="text-muted">Tip: Consider booking {% if today_prices['flight'] > yesterday_prices['flight'] %}yesterday{% else %}tomorrow{% endif %} for the best flight deals!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transport options -->
+        <div class="row mb-4">
+            <!-- Direct options -->
+            <div class="col-md-9">
+                <div class="card shadow">
+                    <div class="card-header bg-light">
+                        <ul class="nav nav-tabs card-header-tabs" id="transportTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab" aria-controls="all" aria-selected="true">All Options</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="flight-tab" data-bs-toggle="tab" data-bs-target="#flight" type="button" role="tab" aria-controls="flight" aria-selected="false">Flight</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="train-tab" data-bs-toggle="tab" data-bs-target="#train" type="button" role="tab" aria-controls="train" aria-selected="false">Train</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="bus-tab" data-bs-toggle="tab" data-bs-target="#bus" type="button" role="tab" aria-controls="bus" aria-selected="false">Bus</button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content" id="transportTabsContent">
+                            <div class="tab-pane fade show active" id="all" role="tabpanel" aria-labelledby="all-tab">
+                                {% if direct|length > 0 %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Mode</th>
+                                                <th>Operator</th>
+                                                <th>Departure</th>
+                                                <th>Price (₹)</th>
+                                                <th>Duration</th>
+                                                <th>Rating</th>
+                                                <th>Availability</th>
+                                                <th>Notes</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for option in direct %}
+                                            <tr>
+                                                <td>
+                                                    {% if option.mode == 'flight' %}
+                                                        ✈️
+                                                    {% elif option.mode == 'train' %}
+                                                        🚆
+                                                    {% elif option.mode == 'bus' %}
+                                                        🚌
+                                                    {% endif %}
+                                                    {{ option.mode|capitalize }}
+                                                </td>
+                                                <td>{{ option.operator }}</td>
+                                                <td>{{ option.departure_time }}</td>
+                                                <td>{{ option.price }}</td>
+                                                <td>{{ option.duration }} hrs</td>
+                                                <td>{{ option.rating }} ⭐</td>
+                                                <td>{{ option.availability }}</td>
+                                                <td><span class="badge bg-info">{{ option.explanation }}</span></td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="alert alert-warning">
+                                    No direct routes found between these cities.
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Flight tab -->
+                            <div class="tab-pane fade" id="flight" role="tabpanel" aria-labelledby="flight-tab">
+                                {% if flight_options|length > 0 %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Airline</th>
+                                                <th>Departure</th>
+                                                <th>Price (₹)</th>
+                                                <th>Duration</th>
+                                                <th>Rating</th>
+                                                <th>Notes</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for option in flight_options %}
+                                            <tr>
+                                                <td>{{ option.operator }}</td>
+                                                <td>{{ option.departure_time }}</td>
+                                                <td>{{ option.price }}</td>
+                                                <td>{{ option.duration }} hrs</td>
+                                                <td>{{ option.rating }} ⭐</td>
+                                                <td><span class="badge bg-info">{{ option.explanation }}</span></td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="alert alert-warning">
+                                    No flights available for this route.
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Train tab -->
+                            <div class="tab-pane fade" id="train" role="tabpanel" aria-labelledby="train-tab">
+                                {% if train_options|length > 0 %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Train Number</th>
+                                                <th>Departure</th>
+                                                <th>Price (₹)</th>
+                                                <th>Duration</th>
+                                                <th>Availability</th>
+                                                <th>Notes</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for option in train_options %}
+                                            <tr>
+                                                <td>{{ option.operator }}</td>
+                                                <td>{{ option.departure_time }}</td>
+                                                <td>{{ option.price }}</td>
+                                                <td>{{ option.duration }} hrs</td>
+                                                <td>{{ option.availability }}</td>
+                                                <td><span class="badge bg-info">{{ option.explanation }}</span></td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="alert alert-warning">
+                                    No trains available for this route.
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Bus tab -->
+                            <div class="tab-pane fade" id="bus" role="tabpanel" aria-labelledby="bus-tab">
+                                {% if bus_options|length > 0 %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Operator</th>
+                                                <th>Departure</th>
+                                                <th>Price (₹)</th>
+                                                <th>Duration</th>
+                                                <th>Seats Left</th>
+                                                <th>Notes</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for option in bus_options %}
+                                            <tr>
+                                                <td>{{ option.operator }}</td>
+                                                <td>{{ option.departure_time }}</td>
+                                                <td>{{ option.price }}</td>
+                                                <td>{{ option.duration }} hrs</td>
+                                                <td>{{ option.availability }}</td>
+                                                <td><span class="badge bg-info">{{ option.explanation }}</span></td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <div class="alert alert-warning">
+                                    No buses available for this route.
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Filter sidebar -->
+            <div class="col-md-3">
+                <div class="card shadow">
+                    <div class="card-header bg-light">
+                        <h5>Filter Results</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="filterForm">
+                            <div class="mb-3">
+                                <label for="priceRange" class="form-label">Max Price: ₹<span id="priceRangeValue">5000</span></label>
+                                <input type="range" class="form-range" id="priceRange" min="500" max="10000" value="5000" step="100">
+                            </div>
+                            <div class="mb-3">
+                                <label for="durationRange" class="form-label">Max Duration: <span id="durationRangeValue">10</span> hours</label>
+                                <input type="range" class="form-range" id="durationRange" min="1" max="24" value="10" step="1">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Transport Mode:</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="flightCheck" checked>
+                                    <label class="form-check-label" for="flightCheck">Flight</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="trainCheck" checked>
+                                    <label class="form-check-label" for="trainCheck">Train</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="busCheck" checked>
+                                    <label class="form-check-label" for="busCheck">Bus</label>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-primary w-100" id="applyFilters">Apply Filters</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Route map -->
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-light">
+                        <h5>Route Map</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="route-map">{{ map_html|safe }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Destination info -->
+            <div class="col-md-4">
+                <!-- Weather forecast -->
+                <div class="card shadow mb-4">
+                    <div class="card-header bg-light">
+                        <h5>Weather in {{ destination }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="weather-container">
+                            {% for day in weather[:3] %}
+                            <div class="weather-day">
+                                <div class="weather-date">{{ day.day }}</div>
+                                <div class="weather-icon">{{ day.weather_icon }}</div>
+                                <div class="weather-temp">{{ day.temp_min }}° - {{ day.temp_max }}°C</div>
+                                <div class="weather-desc">{{ day.weather }}</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="text-center mt-2">
+                            <a href="{{ url_for('weather', city=destination) }}" class="btn btn-sm btn-outline-primary">Full Forecast</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Attractions -->
+                <div class="card shadow">
+                    <div class="card-header bg-light">
+                        <h5>Top Attractions in {{ destination }}</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush">
+                            {% for attraction in attractions %}
+                            <li class="list-group-item">
+                                <div class="d-flex">
+                                    <div class="flex-shrink-0">
+                                        <img src="{{ attraction.image_url }}" alt="{{ attraction.name }}" class="attraction-thumbnail">
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <h6>{{ attraction.name }}</h6>
+                                        <div class="text-warning mb-1">
+                                            {% for i in range(5) %}
+                                                {% if i < attraction.rating|int %}
+                                                    ★
+                                                {% else %}
+                                                    ☆
+                                                {% endif %}
+                                            {% endfor %}
+                                            {{ attraction.rating }}
+                                        </div>
+                                        <p class="small text-muted">{{ attraction.description }}</p>
+                                    </div>
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        <div class="card-footer text-center">
+                            <a href="{{ url_for('attractions', city=destination) }}" class="btn btn-sm btn-outline-primary">View All Attractions</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer mt-4">
+        <div class="container text-center py-3">
+            <p>Smart Travel Assistant &copy; 2023</p>
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">New Search</a>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up price trend chart
+            fetch('/api/price_trends/{{ source }}/{{ destination }}')
+                .then(response => response.json())
+                .then(data => {
+                    const ctx = document.getElementById('priceTrendChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.dates,
+                            datasets: [{
+                                label: 'Flight',
+                                data: data.flight,
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                tension: 0.1
+                            }, {
+                                label: 'Train',
+                                data: data.train,
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                tension: 0.1
+                            }, {
+                                label: 'Bus',
+                                data: data.bus,
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                tension: 0.1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'Price Trends for Last 30 Days'
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    title: {
+                                        display: true,
+                                        text: 'Price (₹)'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                });
+            
+            // Sliders showing values
+            const priceRange = document.getElementById('priceRange');
+            const priceRangeValue = document.getElementById('priceRangeValue');
+            priceRange.addEventListener('input', () => {
+                priceRangeValue.textContent = priceRange.value;
+            });
+            
+            const durationRange = document.getElementById('durationRange');
+            const durationRangeValue = document.getElementById('durationRangeValue');
+            durationRange.addEventListener('input', () => {
+                durationRangeValue.textContent = durationRange.value;
+            });
+            
+            // Apply filters
+            document.getElementById('applyFilters').addEventListener('click', function() {
+                const filters = {
+                    maxPrice: parseInt(priceRange.value),
+                    maxDuration: parseInt(durationRange.value),
+                    modes: {
+                        flight: document.getElementById('flightCheck').checked,
+                        train: document.getElementById('trainCheck').checked,
+                        bus: document.getElementById('busCheck').checked
+                    }
+                };
+                
+                // Send filters to backend
+                fetch('/api/filter', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(filters)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Would update results based on response
+                    console.log('Filters applied:', data);
+                    alert('Filters applied');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
